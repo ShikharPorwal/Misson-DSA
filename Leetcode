@@ -1,1 +1,386 @@
+QUES->23(Leetcode (Merge K sorted list)
+struct CompareListNode {
+    bool operator()(ListNode* a, ListNode* b) {
+        return a->val > b->val;
+    }
+};
 
+class Solution {
+public:
+    ListNode* mergeKLists(vector<ListNode*>& lists) {
+    priority_queue<ListNode*, vector<ListNode*>, CompareListNode> pq;
+    int n=lists.size();
+
+    if(n==0) return NULL;
+
+    for(int i=0;i<n;i++){
+        if(lists[i]!=NULL){
+            pq.push(lists[i]);
+        }
+    }
+
+    ListNode* dummy=new ListNode;
+    ListNode* ans=dummy;
+
+    while(!pq.empty()){
+        auto x=pq.top();
+        pq.pop();
+        ListNode* node= x;
+
+        ans->next=node;
+        ans=ans->next;
+
+        if(node->next!=NULL) pq.push({node->next});
+    }
+    
+    return dummy->next;
+    }
+};
+QUESTION->215 Leetcode( K Largeest Element in an array)
+class Solution {
+public:
+    int findKthLargest(std::vector<int>& nums, int k) {
+        std::sort(nums.begin(), nums.end(), std::greater<int>());
+        return nums[k-1];
+    }
+};
+
+
+QUESTION->239 SLIDING WINDOW MAXIMUM(LEETCODE)
+class Solution {
+public:
+    vector<int> maxSlidingWindow(vector<int>& nums, int k) {
+        deque<int> dq; // stores *indices*
+        vector<int> result;
+        for (int i = 0; i < nums.size(); ++i) {
+            if (!dq.empty() && dq.front() == i - k)
+                dq.pop_front();
+            while (!dq.empty() && nums[dq.back()] < nums[i])
+                dq.pop_back();
+
+            dq.push_back(i)
+            if (i >= k - 1)
+                result.push_back(nums[dq.front()]);
+        }
+        return result;
+    }
+};
+
+QUESTION->347 TOP K FREQUENT ELEMENT(LEETCODE)
+vector<int> topKFrequent(vector<int>& nums, int k) {
+    vector<int> ans;
+    unordered_map<int, int> hm;
+    for (int num : nums) {
+        hm[num]++;
+    }
+    vector<pair<int, int>> temp;
+    for (auto& entry : hm) {
+        temp.push_back({entry.second, entry.first});
+    }
+    sort(temp.begin(), temp.end(), greater<pair<int, int>>());
+    
+    for (int i = 0; i < k; i++) {
+        ans.push_back(temp[i].second);
+    }
+    return ans;
+}
+
+QUESTION->373FIND K PAIR WITH SMALLEST SUMS(LEETCODE)
+class Solution {
+public:
+    vector<vector<int>> kSmallestPairs(vector<int>& nums1, vector<int>& nums2, int k) {
+        vector<vector<int>> result;
+        if (nums1.empty() || nums2.empty() || k == 0) return result;
+        priority_queue<tuple<int, int, int>, vector<tuple<int, int, int>>, greater<>> minHeap;
+        for (int i = 0; i < nums1.size() && i < k; ++i) {
+            minHeap.emplace(nums1[i] + nums2[0], i, 0);
+        }
+        while (k-- > 0 && !minHeap.empty()) {
+            auto [sum, i, j] = minHeap.top(); minHeap.pop();
+            result.push_back({nums1[i], nums2[j]});
+            if (j + 1 < nums2.size()) {
+                minHeap.emplace(nums1[i] + nums2[j + 1], i, j + 1);
+            }
+        }
+        return result;
+    }
+};
+
+
+QUESTION->621 TASK SCHEDULER(LEETCODE)
+class Solution {
+public:
+    int leastInterval(vector<char>& tasks, int n) {
+        priority_queue<int> pq;
+        vector<int>mp(26,0);
+
+        for(char i:tasks){
+            mp[i-'A']++;  // count the number of times a task needs to be done
+        }   
+        for(int i=0;i<26;++i){
+            if(mp[i]) 
+            pq.push(mp[i]);
+        }
+
+        int time=0; // stores the total time taken 
+        while(!pq.empty()){
+            vector<int>remain;
+            int cycle=n+1;  
+            while(cycle and !pq.empty()){
+                int max_freq=pq.top(); 
+                pq.pop();
+                if(max_freq>1){  
+                    remain.push_back(max_freq-1); 
+                }
+                ++time; 
+                --cycle; 
+            }
+            for(int count:remain){
+                pq.push(count); 
+            }
+            if(pq.empty())break; 
+            time+=cycle;  
+        }
+        return time;
+    }
+};
+
+QUESTION->862 SHORTEST SUBARRAY SUM WITH AT LEAST K(LEETCODE)
+class Solution {
+public:
+    int shortestSubarray(vector<int>& nums, int k) {
+        int n = nums.size();
+        vector<long> prefix(n + 1, 0);
+        for (int i = 0; i < n; ++i) {
+            prefix[i + 1] = prefix[i] + nums[i];
+        }
+        deque<int> dq; // Monotonic queue
+        int minLength = INT_MAX;
+        for (int i = 0; i <= n; ++i) {
+            while (!dq.empty() && prefix[i] - prefix[dq.front()] >= k) {
+                minLength = min(minLength, i - dq.front());
+                dq.pop_front();
+            }
+            while (!dq.empty() && prefix[i] <= prefix[dq.back()]) {
+                dq.pop_back();
+            }
+            dq.push_back(i);
+        }
+        return minLength == INT_MAX ? -1 : minLength;
+    }
+};
+
+QUESTION->BINARY TREE PRUNING(LEETCODE)
+#include <iostream>
+using namespace std;
+
+// Definition for a binary tree node.
+struct TreeNode {
+    int val;
+    TreeNode *left;
+    TreeNode *right;
+    TreeNode() : val(0), left(nullptr), right(nullptr) {}
+    TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}
+    TreeNode(int x, TreeNode *left, TreeNode *right) : val(x), left(left), right(right) {}
+};
+
+class Solution {
+public:
+    TreeNode* pruneTree(TreeNode* root) {
+        if (root == nullptr) {
+            return nullptr;
+        }
+        root->left = pruneTree(root->left);
+        root->right = pruneTree(root->right);
+        if (root->val == 0 && root->left == nullptr && root->right == nullptr) {
+            return nullptr;
+        }
+        return root;
+    }
+};
+
+QUESTION->543 DIAMETER OF THE BINARY TREE(LEETCODE)
+#include <bits/stdc++.h>
+using namespace std;
+
+class TreeNode {
+public:
+    int val;
+    TreeNode *left, *right;
+    TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}
+};
+
+class Solution {
+public:
+    int diameter = 0; // Member variable to store the diameter
+
+    int diameterOfBinaryTree(TreeNode* root) {
+        helper(root);
+        return diameter; // Return the calculated diameter
+    }
+
+    int helper(TreeNode* node) {
+        if (node == nullptr) return 0;
+
+        int leftDepth = helper(node->left);   
+        int rightDepth = helper(node->right); 
+
+       
+        int currentDiameter = leftDepth + rightDepth;
+
+        
+        diameter = max(diameter, currentDiameter);
+
+       
+        return max(leftDepth, rightDepth) + 1;
+    }
+};
+
+
+QUESTION->257 BINARY TREE PATHS(LEETCODE)
+class Solution {
+public:
+    void findPath(TreeNode* node, vector<string>& ans, string temp) 
+    {
+        temp += to_string(node->val);  
+        if (node->left) 
+            findPath(node->left, ans, temp + "->");  
+        if (node->right)
+            findPath(node->right, ans, temp + "->"); 
+        if (!node->left && !node->right)
+        ans.push_back(temp);  
+    }
+
+    vector<string> binaryTreePaths(TreeNode* root) {
+        vector<string> ans;
+        if (root) findPath(root, ans, "");
+        return ans;
+    }
+};
+
+QUESTION->236 LOWEST COMMOM ANCESTOR OF A BINARY TREE(LEETCODE)
+class Solution:
+    def lowestCommonAncestor(self, root: TreeNode, p: TreeNode, q: TreeNode) -> TreeNode:
+        def dfs(node):
+           
+            if not node:
+                return None
+            
+            
+            if node == p or node == q:
+                return node
+            
+            
+            left = dfs(node.left)
+            right = dfs(node.right)
+            
+         
+            if left and right:
+                return node
+            
+            
+            return left if left else right
+        
+       
+        return dfs(root)
+};
+
+QUESTION->979 DISTRIBUTE COINS IN BINARY TREE(LEETCODE)
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+class Solution:
+    def distributeCoins(self, root: TreeNode) -> int:
+        self.moves = 0
+        
+        def dfs(node):
+            if not node:
+                return 0
+            
+            left_excess = dfs(node.left)
+            right_excess = dfs(node.right)
+            
+            self.moves += abs(left_excess) + abs(right_excess)
+            
+            return node.val + left_excess + right_excess - 1
+        
+        dfs(root)
+        return self.moves;
+}
+
+
+QUESTION->331 VERIFY SERIALIZATION OF A BINARY TREE(LEETCODE)
+class Solution {
+public:
+    bool isValidSerialization(string preorder) {
+        int balance = 1;
+        stringstream ss(preorder);
+        string node;
+
+        while (getline(ss, node, ',')) {
+            if (balance <= 0) return false;
+            if (node == "#") --balance;
+            else ++balance;
+        }
+        return balance == 0;
+    }
+};
+
+
+QUESTION 701 INSERT INTO A BINARY TREE(LEETCODE)
+/**
+ * Definition for a binary tree node.
+ * struct TreeNode {
+ *     int val;
+ *     TreeNode *left;
+ *     TreeNode *right;
+ *     TreeNode() : val(0), left(nullptr), right(nullptr) {}
+ *     TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}
+ *     TreeNode(int x, TreeNode *left, TreeNode *right) : val(x), left(left), right(right) {}
+ * };
+ */
+class Solution {
+public:
+    TreeNode* insertIntoBST(TreeNode* root, int val) {
+        if(root==nullptr) return new TreeNode(val);
+        TreeNode* curr=root;
+        while(true){
+            if(curr->val<=val){
+                if(curr->right) curr=curr->right;
+                else{
+                    curr->right=new TreeNode(val);
+                    break;
+                }
+            }
+            else{
+                if(curr->left) curr=curr->left;
+                else{
+                    curr->left=new TreeNode(val);
+                    break;
+                }
+            }
+        }
+        return root;
+    }
+};
+
+
+QUESTION->98 VALIDATE BINARY SEARCH TREE(LEETCODE)
+class Solution {
+public:
+    bool isValidBST(TreeNode* root) {
+        return valid(root, LONG_MIN, LONG_MAX);        
+    }
+
+private:
+    bool valid(TreeNode* node, long minimum, long maximum) {
+        if (!node) return true;
+
+        if (!(node->val > minimum && node->val < maximum)) return false;
+
+        return valid(node->left, minimum, node->val) && valid(node->right, node->val, maximum);
+    }    
+};
